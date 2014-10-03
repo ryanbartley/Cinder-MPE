@@ -17,3 +17,4 @@ Now we'll clone this repo...
 - This will clone Cinder-MPE into your blocks folder. 
 - Now you can check out the samples and you can make new Cinder-MPE projects with tinderbox.
 
+Cinder-MPE also uses Cinder-Asio [here](https://github.com/BanTheRewind/Cinder-Asio). You'll need to clone Cinder-Asio in your blocks as well as it is a dependency of this block. You can simply do that the way that we did it above by cloning it into your Cinder/blocks/ folder.
