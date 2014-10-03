@@ -1,0 +1,25 @@
+{
+	"settings" : {
+		"client_id" : 1,
+		"name" : "Synchronous Client 2",
+		"server" : {
+			"ip" : "127.0.0.1",
+			"port" : 9002
+		},
+		"local_dimensions" : {
+			"width" : 400,
+			"height" : 400
+		},
+		"local_location" : {
+			"x" : 800,
+			"y" : 0
+		},
+		"master_dimensions" : {
+			"width" : 1400,
+			"height" : 400
+		},
+		"go_fullscreen" : false,
+		"offset_window" : true,
+		"debug" : true
+	}
+}
