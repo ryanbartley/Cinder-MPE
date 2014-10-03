@@ -1,6 +1,6 @@
-This is an implementation of Most-Pixels-Ever for Cinder. Take a look here https://github.com/shiffman/Most-Pixels-Ever-Processing.
+This is an implementation of Most-Pixels-Ever for Cinder. Take a look [here](https://github.com/shiffman/Most-Pixels-Ever-Processing).
 
-This version is built for glNext branch of the [Cinder Repo](https://github.com/cinder/Cinder/tree/glNext). To get this version follow these instructions...
+This version of Most-Pixels-Ever is built for glNext branch of the [Cinder Repo](https://github.com/cinder/Cinder/tree/glNext). To get this version follow these instructions...
 
 - Go to a folder that you'd like to save cinder and open it in terminal
 - Type `git clone https://github.com/cinder/Cinder.git`
