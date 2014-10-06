@@ -78,15 +78,15 @@ void BouncingBallApp::setupGl()
 
 void BouncingBallApp::reset()
 {
-	cout << "I'm resetting" << endl;
 	mSpheres.clear();
-	cout << "Client size is " << mMpeClient->getMasterSize() << endl;
+	
 	mSpheres.push_back( ::Sphere( vec2( mMpeClient->getMasterSize() ) / 2.0f,
 								 vec2(10.0f, 10.0f), mMpeClient->getMasterSize(), mSphereBatch ) );
 }
 
 void BouncingBallApp::mouseDown( MouseEvent event )
 {
+	
 }
 
 void BouncingBallApp::dataMessage( const std::string &message, const uint32_t id )
@@ -106,13 +106,13 @@ void BouncingBallApp::draw()
 	gl::clear( Color( 0, 0, 0 ) );
 	
 	gl::setMatricesWindowPersp( getWindowSize() );
-	
 	auto localOrigin = vec2( mMpeClient->getVisibleRect().x1, mMpeClient->getVisibleRect().y1 );
+	gl::translate( vec3( localOrigin.x * -1.0f, localOrigin.y * -1.0f, 0.0f ) );
 	
-	gl::translate( vec3( localOrigin.x * -1.0f, localOrigin.y * -1.0f, 0.0f  ) );
 	for( auto & sphere : mSpheres ) {
 		sphere.draw();
 	}
+	
 	mMpeClient->doneRendering();
 }
 
