@@ -351,8 +351,7 @@ void Client::sendClientId()
 void Client::setCurrentRenderFrame( uint64_t frameNum )
 {
 	MessageHandler::setCurrentRenderFrame( frameNum );
-	// mLastFrameConfirmed has to reset when the current render frame is.
-	CI_LOG_V("Frame Numbers: Last: " << mLastFrameConfirmed << " Current: " << mCurrentRenderFrame );
+	// mLastFrameConfirmed has to reset when the current render frame is set to keep them in line.
 	mLastFrameConfirmed = mCurrentRenderFrame - 1;
 }
 	
