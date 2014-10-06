@@ -106,7 +106,7 @@ public:
 	void setResetCallback( const ResetCallback& resetFunc ) { mResetCallback = resetFunc; }
 	template<class F, class T>
 	void setResetCallback( F function, T* instance )
-	{ mDataMessageCallback = std::bind( function, instance ); }
+	{ mResetCallback = std::bind( function, instance ); }
 	//! Sets the function, with signature void ( const std::string &, const uint32_t ),
 	//! to be called when the client receives a data message.
 	void setDataMessageCallback( const DataMessageCallback& dataMessageFunc ) { mDataMessageCallback = dataMessageFunc; }

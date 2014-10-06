@@ -101,14 +101,16 @@ void Client::update()
 			std::lock_guard<std::mutex> guard( *mMessageMutex );
 			if ( mMessages.size() ) {
 				// There may be more than 1 message in the read.
-				for ( const auto & message : mMessages ) {
-					if (message.length() > 0) {
+				while( ! mMessages.empty() ) {
+					auto & message = mMessages.front();
+					if ( message.size() > 0) {
+						CI_LOG_V("I'm about to parse a message");
 						Protocol::parseClient( message, this );
 					}
 					CI_LOG_V("Current message" + message );
+					mMessages.pop_front();
 				}
 				
-				mMessages.clear();
 			}
 		}
 		
@@ -298,6 +300,7 @@ void Client::onConnect( TcpSessionRef session )
 	mIsConnected = true;
 	
 	auto weak = std::weak_ptr<Client>( shared_from_this() );
+	
 	mTcpSession->connectCloseEventHandler( std::bind( []( std::weak_ptr<Client> &weakInst ){
 		auto sharedInst = weakInst.lock();
 		if( sharedInst ) {
@@ -317,9 +320,9 @@ void Client::onRead( ci::Buffer buffer )
 {
 	std::lock_guard<std::mutex> guard( *mMessageMutex );
 	auto msg = TcpSession::bufferToString( buffer );
-	CI_LOG_V("Received a message " + msg);
+	CI_LOG_V("Received a message " << msg);
 	auto msgs = ci::split( msg, Protocol::messageDelimiter() );
-	mMessages.insert( mMessages.end(), msgs.begin(), msgs.end() );
+	mMessages.push_back( msgs[0] );
 }
 	
 void Client::onWrite( size_t bytesTransferred )
@@ -349,11 +352,13 @@ void Client::setCurrentRenderFrame( uint64_t frameNum )
 {
 	MessageHandler::setCurrentRenderFrame( frameNum );
 	// mLastFrameConfirmed has to reset when the current render frame is.
+	CI_LOG_V("Frame Numbers: Last: " << mLastFrameConfirmed << " Current: " << mCurrentRenderFrame );
 	mLastFrameConfirmed = mCurrentRenderFrame - 1;
 }
 	
 void Client::receivedResetCommand()
 {
+	CI_LOG_V("Received Reset command, Current Frame number: " << mCurrentRenderFrame );
 	if( mResetCallback )
 		mResetCallback();
 }

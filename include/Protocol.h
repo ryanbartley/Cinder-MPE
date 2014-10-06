@@ -186,7 +186,7 @@ public:
         std::string command = tokens[0];
 		
         if ( command == Protocol::RESET_ALL ) {
-            handler->setCurrentRenderFrame( 0 );
+            handler->setCurrentRenderFrame( 1 );
             handler->receivedResetCommand();
         }
         else if ( command == Protocol::NEXT_FRAME ) {

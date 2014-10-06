@@ -44,6 +44,8 @@ void BouncingBallApp::setup()
 {
 	randSeed( 5 );
 	
+	// Construct the name of the settings file, CLIENT_ID is a preprocessor variable
+	// that changes for each build.
 	auto settingsFile = "settings." + to_string( CLIENT_ID ) + ".json";
 	// Initialize and setup the MPE Client
 	mMpeClient = mpe::Client::create( loadAsset( settingsFile ) );
@@ -76,11 +78,11 @@ void BouncingBallApp::setupGl()
 
 void BouncingBallApp::reset()
 {
-	
+	cout << "I'm resetting" << endl;
 	mSpheres.clear();
-	
-	mSpheres.push_back( ::Sphere( randVec2f() * vec2( mMpeClient->getMasterSize() ),
-								 randVec2f() * 10.0f, mMpeClient->getMasterSize(), mSphereBatch ) );
+	cout << "Client size is " << mMpeClient->getMasterSize() << endl;
+	mSpheres.push_back( ::Sphere( vec2( mMpeClient->getMasterSize() ) / 2.0f,
+								 vec2(10.0f, 10.0f), mMpeClient->getMasterSize(), mSphereBatch ) );
 }
 
 void BouncingBallApp::mouseDown( MouseEvent event )

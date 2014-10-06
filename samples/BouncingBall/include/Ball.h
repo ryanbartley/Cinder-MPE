@@ -27,14 +27,17 @@ public:
 		
 		if ( mPosition.x < radius || mPosition.x >
 			( mClientSize.x - radius ) ) {
+			std::cout << "Resetting x" << std::endl;
 			mVelocity.x = mVelocity.x * -1;
 		}
 		if ( mPosition.y < radius || mPosition.y >
 			( mClientSize.y - radius ) ) {
+			std::cout << "Resetting y" << std::endl;
 			mVelocity.y = mVelocity.y * -1;
 		}
 		
 		mPosition += mVelocity;
+		std::cout << "Updating position " << mPosition << std::endl;
 	}
 	
 	inline void draw()
