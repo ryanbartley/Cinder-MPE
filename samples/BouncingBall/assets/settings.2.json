@@ -2,6 +2,8 @@
 	"settings" : {
 		"client_id" : 1,
 		"name" : "Synchronous Client 2",
+		"asynchronous" : false,
+		"asynchreceive" : false,
 		"server" : {
 			"ip" : "127.0.0.1",
 			"port" : 9002

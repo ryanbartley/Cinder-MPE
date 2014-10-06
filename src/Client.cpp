@@ -10,6 +10,8 @@
 #include "cinder/Json.h"
 #include "Protocol.h"
 
+#include <boost/signals2/shared_connection_block.hpp>
+
 #include "Client.h"
 
 using namespace std;
@@ -19,14 +21,16 @@ using namespace ci::app;
 namespace mpe {
 	
 Client::Client( const DataSourceRef &jsonSettingsFile, boost::asio::io_service &service, bool thread )
-: ClientBase(), mTcpClient( TcpClient::create( service ) ), mIsConnected(false),
-	mPort( 0 ), mHostname( "" ), mIsThreaded( thread ),
-	mMessageMutex( make_shared<std::mutex>() ),
+: ClientBase(), mIsConnected(false), mPort( 0 ), mHostname( "" ),
+	mTcpClient( TcpClient::create( service ) ),
+	mIsThreaded( thread ), mMessageMutex( make_shared<std::mutex>() ),
 	mLastFrameConfirmed( 0 ), mClientName( "" ), mClientID( 0 ),
 	mIsAsync( false ), mAsyncReceivesData( false )
 {
 	loadSettings( jsonSettingsFile );
-	auto connection = ci::app::App::get()->getSignalUpdate().connect( std::bind( &Client::update, this ) );
+	
+	mAppUpdateConnection = ci::app::App::get()->getSignalUpdate().connect( std::bind( &Client::update, this ) );
+	
 	start();
 }
 	
@@ -50,8 +54,9 @@ void Client::start( const std::string &hostname, uint16_t port )
 void Client::stop()
 {
 	mIsConnected = false;
-	if( mTcpClient ) {
+	if( mTcpSession ) {
 		mTcpSession->close();
+		mTcpSession.reset();
 	}
 }
 
@@ -68,18 +73,25 @@ void Client::update()
 					if (message.length() > 0) {
 						Protocol::parseClient( message, this );
 					}
+					CI_LOG_V("Current message" + message );
 				}
+				
 				mMessages.clear();
 			}
 		}
 		
-		if ( mFrameIsReady ) {
+		
+		if ( mFrameIsReady && ! mIsAsync ) {
+			// You always need an updateCallback if synchronous.
+			CI_ASSERT( mUpdateCallback );
+			CI_LOG_V("I'm updating the current frame.");
 			mUpdateCallback( getCurrentRenderFrame() );
 		}
 	}
 	else {
-		
-//		start();
+//		if( mTcp ) {
+//			start();
+//		}
 	}
 }
 	
@@ -110,7 +122,8 @@ void Client::sendMessage( const std::string &message, const std::vector<uint32_t
 void Client::doneRendering()
 {
 	if( mTcpSession ) {
-		if( mLastFrameConfirmed <= mCurrentRenderFrame ) {
+		if( mLastFrameConfirmed < mCurrentRenderFrame ) {
+			CI_LOG_V("Confirming done with render");
 			auto msg = Protocol::renderComplete( mClientID, mCurrentRenderFrame );
 			mTcpSession->write( TcpSession::stringToBuffer( msg ) );
 			mLastFrameConfirmed = mCurrentRenderFrame;
@@ -241,6 +254,7 @@ void Client::start()
 	mTcpClient->connectConnectEventHandler( &Client::onConnect, this );
 	mTcpClient->connectErrorEventHandler( &Client::onError, this );
 	
+	CI_LOG_V("Connecting");
 	mTcpClient->connect( mHostname, mPort );
 }
 	
@@ -251,27 +265,34 @@ void Client::onConnect( TcpSessionRef session )
 	mTcpSession = session;
 	mIsConnected = true;
 	
-	mTcpSession->connectCloseEventHandler( [&] {
-		CI_LOG_I("Connection closed");
-		mIsConnected = false;
-	});
+	auto weak = std::weak_ptr<Client>( shared_from_this() );
+	mTcpSession->connectCloseEventHandler( std::bind( []( std::weak_ptr<Client> &weakInst ){
+		auto sharedInst = weakInst.lock();
+		if( sharedInst ) {
+			CI_LOG_I("Connection closed");
+			sharedInst->mIsConnected = false;
+		}
+	}, std::move(weak) ) );
 	
 	mTcpSession->connectErrorEventHandler( &Client::onError, this );
 	mTcpSession->connectReadEventHandler( &Client::onRead, this );
 	mTcpSession->connectWriteEventHandler( &Client::onWrite, this );
+	
 	sendClientId();
 }
 	
 void Client::onRead( ci::Buffer buffer )
 {
 	std::lock_guard<std::mutex> guard( *mMessageMutex );
-	auto msgs = ci::split( TcpSession::bufferToString( buffer ), Protocol::messageDelimiter() );
+	auto msg = TcpSession::bufferToString( buffer );
+	CI_LOG_V("Received a message " + msg);
+	auto msgs = ci::split( msg, Protocol::messageDelimiter() );
 	mMessages.insert( mMessages.end(), msgs.begin(), msgs.end() );
 }
 	
 void Client::onWrite( size_t bytesTransferred )
 {
-//	CI_LOG_V( bytesTransferred << " Bytes Transferred" );
+	CI_LOG_V( bytesTransferred << " Bytes Transferred" );
 	mTcpSession->read( Protocol::messageDelimiter() );
 }
 	

@@ -38,22 +38,22 @@ public:
 	gl::BatchRef			mSphereBatch;
 	gl::GlslProgRef			mGlsl;
 	CameraPersp				mCam;
-	
+
 	std::shared_ptr<boost::asio::io_service> mIoService;
 	std::shared_ptr<boost::asio::io_service::work> mWork;
-	std::thread		mThread;
+	std::thread						mThread;
 };
 
 void BouncingBallApp::setup()
 {
 	randSeed( 5 );
 	
-	mIoService.reset( new boost::asio::io_service );
-	mWork.reset( new boost::asio::io_service::work( *mIoService ) );
-	mThread = std::thread( boost::bind( &boost::asio::io_service::run, mIoService ) );
+//	mIoService.reset( new boost::asio::io_service );
+//	mWork.reset( new boost::asio::io_service::work( *mIoService ) );
+//	mThread = std::thread( boost::bind( &boost::asio::io_service::run, *mIoService ) );
 	
 	// Initialize and setup the MPE Client
-	mMpeClient = mpe::Client::create( loadAsset( "settings."+ to_string( CLIENT_ID ) +".json" ), *mIoService );
+	mMpeClient = mpe::Client::create( loadAsset( "settings."+ to_string( CLIENT_ID ) +".json" ) );
 	// Pass the function callbacks to MPE Client
 	mMpeClient->setDataMessageCallback( &BouncingBallApp::dataMessage, this );
 	mMpeClient->setUpdateFrameCallback( &BouncingBallApp::updateFrame, this );
@@ -64,9 +64,6 @@ void BouncingBallApp::setup()
 	gl::scissor( mMpeClient->getGlWindowInfo() );
 
 	setupGl();
-	
-	mSpheres.push_back( ::Sphere( randVec2f() * vec2( mMpeClient->getMasterSize() ),
-								 randVec2f() * 10.0f, mMpeClient->getMasterSize(), mSphereBatch ) );
 	
 	// Initialize the resettable member functions using the reset function.
 	reset();
@@ -88,6 +85,11 @@ void BouncingBallApp::reset()
 {
 	mCam.setPerspective( 60.0f, getWindowAspectRatio(), .01f, 1000 );
 	mCam.lookAt( vec3( 0, 0, 100 ), vec3( 0 ) );
+	
+	mSpheres.clear();
+	
+	mSpheres.push_back( ::Sphere( randVec2f() * vec2( mMpeClient->getMasterSize() ),
+								 randVec2f() * 10.0f, mMpeClient->getMasterSize(), mSphereBatch ) );
 }
 
 void BouncingBallApp::mouseDown( MouseEvent event )
@@ -96,18 +98,8 @@ void BouncingBallApp::mouseDown( MouseEvent event )
 
 void BouncingBallApp::dataMessage( const std::string &message, const uint32_t id )
 {
-	auto parts = ci::split( message, "|" );
-	if( parts[0] == "Sph" ) {
-		auto position = ci::split( parts[1], "," );
-		mSpheres.push_back( vec2(position[0], position[1] ) );
-	}
-	else if( parts[0] == "Cub" ) {
-		auto position = ci::split( parts[1], "," );
-		mSpheres.push_back( vec2(position[0], position[1] ) );
-	}
 	
 }
-
 
 void BouncingBallApp::updateFrame( uint64_t frameNum )
 {
@@ -128,7 +120,6 @@ void BouncingBallApp::draw()
 		sphere.draw();
 	}
 	mMpeClient->doneRendering();
-	cout << getAverageFps() << endl;
 }
 
 CINDER_APP_NATIVE( BouncingBallApp, RendererGl )
