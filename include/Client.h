@@ -41,6 +41,8 @@ public:
 	//! Updates the client and processes all received messages.
 	virtual void	update() override;
 	
+	static void setupCamera( const ClientRef &client, ci::CameraPersp &cam, float zPosition );
+	static ci::mat4 getClientModelTransform( const ClientRef &client );
 	
 	// Communication with the server from this client below...
 	/*********************************************************/

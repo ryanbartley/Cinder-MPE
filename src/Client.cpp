@@ -44,6 +44,38 @@ ClientRef Client::create( const ci::DataSourceRef &jsonSettingsFile, boost::asio
 	return ClientRef( new Client( jsonSettingsFile, service, thread ) );
 }
 	
+void Client::setupCamera( const ClientRef &client, ci::CameraPersp &cam, float zPosition )
+{
+	auto masterSize = client->getMasterSize();
+	auto viewportRect = client->getVisibleRect();
+	auto localSize = viewportRect.getSize();
+	auto localOrigin = vec2( viewportRect.x1, viewportRect.y1 );
+	
+	cam.setAspectRatio( localSize.x / localSize.y );
+	
+	vec3 eye( masterSize.x / 2.0f, masterSize.y / 2.0f, zPosition );
+	vec3 target( masterSize.x / 2.0f, masterSize.y / 2.0f, 0);
+	vec3 up( 0.0f, -1.0f, 0.0f );
+	cam.lookAt(eye, target, up);
+	
+	float horizCenterMaster = masterSize.x / 2.0f;
+	float horizCenterView = localOrigin.x + ( localSize.x * 0.5f );
+	float horizPxShift = horizCenterMaster - horizCenterView;
+	float horizOffset = ( horizPxShift / localSize.x ) * -2.0f;
+	
+	float vertCenterMaster = masterSize.y / 2.0f;
+	float vertCenterView = localOrigin.y + ( localSize.y * 0.5);
+	float vertPxShift = vertCenterMaster - vertCenterView;
+	float vertOffset = ( vertPxShift / localSize.y ) * 2.0f;
+	
+	cam.setLensShift(horizOffset, vertOffset);
+}
+	
+ci::mat4 Client::getClientModelTransform( const ClientRef &client )
+{
+	
+}
+	
 void Client::start( const std::string &hostname, uint16_t port )
 {
 	mHostname = hostname;
@@ -134,7 +166,7 @@ void Client::doneRendering()
 void Client::loadSettings( const ci::DataSourceRef &settingsJsonFile )
 {
 	JsonTree settingsDoc = JsonTree(settingsJsonFile).getChild( "settings" );
-	
+	cout << settingsDoc << endl;
 	try {
 		JsonTree node = settingsDoc.getChild( "asynchronous" );
 		mIsAsync = node.getValue<bool>();
@@ -189,8 +221,8 @@ void Client::loadSettings( const ci::DataSourceRef &settingsJsonFile )
 	}
 	
 	try {
-		JsonTree localDimensions = settingsDoc.getChild( "local_dimensions" );
-		JsonTree localLocation = settingsDoc.getChild( "local_location" );
+		JsonTree localDimensions = settingsDoc["local_dimensions"];
+		JsonTree localLocation = settingsDoc["local_location"];
 		uint32_t width = localDimensions["width"].getValue<uint32_t>();
 		uint32_t height = localDimensions["height"].getValue<uint32_t>();
 		int x = localLocation["x"].getValue<int>();
@@ -203,7 +235,7 @@ void Client::loadSettings( const ci::DataSourceRef &settingsJsonFile )
 	catch ( JsonTree::ExcChildNotFound e ) {
 		if ( !mIsAsync ) {
 			// Async controller doesn't need to know about the dimensions
-			CI_LOG_E("Could not find local dimensions settings for synchronous client.\n");
+			CI_LOG_E(e.what() << " Could not find local dimensions settings for synchronous client.\n");
 		}
 	}
 	
@@ -216,7 +248,7 @@ void Client::loadSettings( const ci::DataSourceRef &settingsJsonFile )
 	catch ( JsonTree::ExcChildNotFound e ) {
 		if ( !mIsAsync ) {
 			// Async controller doesn't need to know about the dimensions
-			CI_LOG_E("Could not find master dimensions settings, for synchronous client.\n");
+			CI_LOG_E(e.what() << " Could not find master dimensions settings, for synchronous client.\n");
 		}
 	}
 	

@@ -9,7 +9,7 @@
 			"port" : 9002
 		},
 		"local_dimensions" : {
-			"localWidth" : 400,
+			"width" : 400,
 			"height" : 400
 		},
 		"local_location" : {
@@ -17,7 +17,7 @@
 			"y" : 0
 		},
 		"master_dimensions" : {
-			"localWidth" : 1400,
+			"width" : 1400,
 			"height" : 400
 		},
 		"go_fullscreen" : false,

@@ -38,22 +38,15 @@ public:
 	gl::BatchRef			mSphereBatch;
 	gl::GlslProgRef			mGlsl;
 	CameraPersp				mCam;
-
-	std::shared_ptr<boost::asio::io_service> mIoService;
-	std::shared_ptr<boost::asio::io_service::work> mWork;
-	std::thread						mThread;
 };
 
 void BouncingBallApp::setup()
 {
 	randSeed( 5 );
 	
-//	mIoService.reset( new boost::asio::io_service );
-//	mWork.reset( new boost::asio::io_service::work( *mIoService ) );
-//	mThread = std::thread( boost::bind( &boost::asio::io_service::run, *mIoService ) );
-	
+	auto settingsFile = "settings." + to_string( CLIENT_ID ) + ".json";
 	// Initialize and setup the MPE Client
-	mMpeClient = mpe::Client::create( loadAsset( "settings."+ to_string( CLIENT_ID ) +".json" ) );
+	mMpeClient = mpe::Client::create( loadAsset( settingsFile ) );
 	// Pass the function callbacks to MPE Client
 	mMpeClient->setDataMessageCallback( &BouncingBallApp::dataMessage, this );
 	mMpeClient->setUpdateFrameCallback( &BouncingBallApp::updateFrame, this );
@@ -83,8 +76,6 @@ void BouncingBallApp::setupGl()
 
 void BouncingBallApp::reset()
 {
-	mCam.setPerspective( 60.0f, getWindowAspectRatio(), .01f, 1000 );
-	mCam.lookAt( vec3( 0, 0, 100 ), vec3( 0 ) );
 	
 	mSpheres.clear();
 	
@@ -111,11 +102,12 @@ void BouncingBallApp::updateFrame( uint64_t frameNum )
 void BouncingBallApp::draw()
 {
 	gl::clear( Color( 0, 0, 0 ) );
-//	auto visRect = mMpeClient->getVisibleRect();
-//	gl::viewport( vec2( visRect.x1, visRect.y1 ), vec2( visRect.x2, visRect.y2 ) );
-//	gl::setMatrices( mCam );
+	
 	gl::setMatricesWindowPersp( getWindowSize() );
 	
+	auto localOrigin = vec2( mMpeClient->getVisibleRect().x1, mMpeClient->getVisibleRect().y1 );
+	
+	gl::translate( vec3( localOrigin.x * -1.0f, localOrigin.y * -1.0f, 0.0f  ) );
 	for( auto & sphere : mSpheres ) {
 		sphere.draw();
 	}
