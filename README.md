@@ -1,4 +1,4 @@
-This is an implementation of Most-Pixels-Ever for Cinder. Take a look [here](https://github.com/shiffman/Most-Pixels-Ever-Processing).
+This is an implementation of Most-Pixels-Ever(original source by [Bill Lindmeier](https://github.com/wdlindmeier/Most-Pixels-Ever-Cinder))for Cinder. Take a look at what Most-Pixels-Ever is [here](https://github.com/shiffman/Most-Pixels-Ever-Processing).
 
 This version of Most-Pixels-Ever is built for glNext branch of the [Cinder Repo](https://github.com/cinder/Cinder/tree/glNext). To get this version follow these instructions...
 
