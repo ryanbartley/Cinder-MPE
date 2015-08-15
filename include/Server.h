@@ -18,7 +18,7 @@ using ServerRef = std::shared_ptr<class Server>;
 	
 class Server : public ServerBase, std::enable_shared_from_this<Server> {
 public:
-	static ServerRef create( const ci::DataSourceRef &jsonSettingsFile, boost::asio::io_service &service = ci::app::App::get()->io_service(), bool thread = false );
+	static ServerRef create( const ci::DataSourceRef &jsonSettingsFile, asio::io_service &service = ci::app::App::get()->io_service(), bool thread = false );
 	
 	virtual void start() override;
 	virtual void start( uint16_t port ) override;
@@ -32,7 +32,7 @@ public:
 		
 		void onError( std::string error, size_t bytesTransferred );
 		void onClose();
-		void onRead( ci::Buffer buffer );
+		void onRead( const ci::BufferRef &buffer );
 		void onWrite( size_t bytesTransferred );
 		
 		void write( std::string &message );
@@ -56,7 +56,7 @@ public:
 	};
 	
 private:
-	Server( const ci::DataSourceRef &jsonSettingsFile, boost::asio::io_service &service, bool thread );
+	Server( const ci::DataSourceRef &jsonSettingsFile, asio::io_service &service, bool thread );
 	
 	void loadSettings( const ci::DataSourceRef &jsonSettingsFile );
 	

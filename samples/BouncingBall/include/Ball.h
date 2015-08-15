@@ -10,7 +10,7 @@
 
 #include "cinder/gl/Batch.h"
 
-const static int kDefaultRadius = 30;
+const static uint32_t kDefaultRadius = 30;
 
 class Sphere {
 public:
@@ -37,7 +37,6 @@ public:
 		}
 		
 		mPosition += mVelocity;
-		std::cout << "Updating position " << mPosition << std::endl;
 	}
 	
 	inline void draw()

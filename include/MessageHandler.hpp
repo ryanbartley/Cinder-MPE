@@ -14,6 +14,7 @@
  ClientBase is a subclass of MessageHandler.
  
  */
+#include "cinder/app/App.h"
 
 namespace mpe {
 	

@@ -1,4 +1,4 @@
-#include "cinder/app/AppNative.h"
+#include "cinder/app/App.h"
 #include "cinder/app/RendererGl.h"
 #include "cinder/gl/gl.h"
 #include "cinder/gl/GlslProg.h"
@@ -14,7 +14,7 @@ using namespace ci;
 using namespace ci::app;
 using namespace std;
 
-class BouncingBallApp : public AppNative {
+class BouncingBallApp : public App {
 public:
 	void setup() override;
 	void mouseDown( MouseEvent event ) override;
@@ -69,11 +69,8 @@ void BouncingBallApp::setup()
 
 void BouncingBallApp::setupGl()
 {
-	mGlsl = gl::GlslProg::create( gl::GlslProg::Format()
-								 .vertex( loadAsset( "Phong.vert" ) )
-								 .fragment( loadAsset( "Phong.frag" ) ) );
 	// Create our sphere that we can draw multiple times
-	mSphereBatch = gl::Batch::create( geom::Sphere().radius( kDefaultRadius ).enable( geom::Attrib::NORMAL ), mGlsl );
+	mSphereBatch = gl::Batch::create( geom::Sphere().radius( kDefaultRadius ), gl::getStockShader( gl::ShaderDef().lambert() ) );
 }
 
 void BouncingBallApp::reset()
@@ -116,4 +113,4 @@ void BouncingBallApp::draw()
 	mMpeClient->doneRendering();
 }
 
-CINDER_APP_NATIVE( BouncingBallApp, RendererGl )
+CINDER_APP( BouncingBallApp, RendererGl )

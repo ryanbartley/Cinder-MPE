@@ -14,7 +14,7 @@ namespace mpe {
 Server::ClientConnection::ClientConnection( const TcpSessionRef &session, const ServerRef &parent )
 : mSession( session ), mParent( parent ), mId( 0 ), mIsAsync( false ), mMessageMutex( new std::mutex() )
 {
-	mSession->connectReadEventHandler( [&]( ci::Buffer buffer ) {
+	mSession->connectReadEventHandler( [&]( const ci::BufferRef &buffer ) {
 		auto msgs = ci::split( TcpSession::bufferToString( buffer ), Protocol::messageDelimiter() );
 		
 		auto msg = ci::split( msgs[0], Protocol::dataMessageDelimiter() );
@@ -50,7 +50,7 @@ Server::ClientConnection::~ClientConnection()
 		mSession->close();
 }
 	
-void Server::ClientConnection::onRead( ci::Buffer buffer )
+void Server::ClientConnection::onRead( const ci::BufferRef &buffer )
 {
 	std::lock_guard<std::mutex> lock( *mMessageMutex );
 	auto msgs = ci::split( TcpSession::bufferToString( buffer ), Protocol::messageDelimiter() );
@@ -72,14 +72,14 @@ void Server::ClientConnection::onError( std::string error, size_t bytesTransferr
 	
 }
 	
-Server::Server( const ci::DataSourceRef &jsonSettingsFile, boost::asio::io_service &service, bool thread )
+Server::Server( const ci::DataSourceRef &jsonSettingsFile, asio::io_service &service, bool thread )
 : mTcpServer( TcpServer::create( service ) ), mTotalAllowedConnections( 1 ), mPort( 0 ), mFPSUpdate( 60 ), mIsThreaded( thread )
 {
 	loadSettings( jsonSettingsFile );
 	start();
 }
 	
-ServerRef Server::create( const ci::DataSourceRef &jsonSettingsFile, boost::asio::io_service &service, bool thread )
+ServerRef Server::create( const ci::DataSourceRef &jsonSettingsFile, asio::io_service &service, bool thread )
 {
 	return ServerRef();  //new Server( jsonSettingsFile, service, thread ) );
 }

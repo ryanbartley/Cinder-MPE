@@ -21,7 +21,7 @@ using ClientRef				= std::shared_ptr<class Client>;
 using UpdateFrameCallback	= std::function<void ( uint64_t )>;
 using ResetCallback			= std::function<void()>;
 using DataMessageCallback	= std::function<void ( const std::string &, const uint32_t )>;
-using io_service_ref		= std::shared_ptr<boost::asio::io_service>;
+using io_service_ref		= std::shared_ptr<asio::io_service>;
 	
 class Client : public ClientBase, public std::enable_shared_from_this<Client> {
 public:
@@ -29,7 +29,7 @@ public:
 	virtual ~Client();
 	
 	//! Creates a MPE client with settings from \a jsonSettingsFile. Takes an optional boost::asio::io_service, uses cinder App's io_service by default. Takes an optional thread boolean, defaults to false. Set this if you've run the io_service on a different thread.
-	static ClientRef create( const ci::DataSourceRef &jsonSettingsFile, boost::asio::io_service &service = ci::app::App::get()->io_service(), bool thread = false );
+	static ClientRef create( const ci::DataSourceRef &jsonSettingsFile, asio::io_service &service = ci::app::App::get()->io_service(), bool thread = false );
 	
 	//! Uses hostname and port to start a Connection with the MPE Server. Most of the time
 	//! the settings file will provide these.
@@ -116,7 +116,7 @@ public:
 	
 	
 protected:
-	Client( const ci::DataSourceRef &jsonSettingsFile, boost::asio::io_service &service, bool thread );
+	Client( const ci::DataSourceRef &jsonSettingsFile, asio::io_service &service, bool thread );
 	
 	//! Load's settings from a json file from the constructor.
 	void loadSettings( const ci::DataSourceRef &settingsJsonFile );
@@ -129,7 +129,7 @@ protected:
 	//! Internal Callback for TcpClient and TcpSession, which presents errors.
 	virtual void		onError( std::string err, size_t bytesTransferred );
 	//! Internal Callback for TcpSession when TcpSession has read something.
-	virtual void		onRead( ci::Buffer buffer );
+	virtual void		onRead( const ci::BufferRef &buffer );
 	//! Internal Callback for TcpSession when TcpSession has finished a write
 	virtual void		onWrite( size_t bytesTransferred );
 	
@@ -150,7 +150,7 @@ protected:
 	UpdateFrameCallback				mUpdateCallback;
 	ResetCallback					mResetCallback;
 	DataMessageCallback				mDataMessageCallback;
-	boost::signals2::connection		mAppUpdateConnection;
+	cinder::signals::Connection		mAppUpdateConnection;
 	
 	// A connection to the server.
     TcpClientRef					mTcpClient;

@@ -20,7 +20,7 @@ using namespace ci::app;
 
 namespace mpe {
 	
-Client::Client( const DataSourceRef &jsonSettingsFile, boost::asio::io_service &service, bool thread )
+Client::Client( const DataSourceRef &jsonSettingsFile, asio::io_service &service, bool thread )
 : ClientBase(), mIsConnected(false), mPort( 0 ), mHostname( "" ),
 	mTcpClient( TcpClient::create( service ) ),
 	mIsThreaded( thread ), mMessageMutex( make_shared<std::mutex>() ),
@@ -39,7 +39,7 @@ Client::~Client()
 	stop();
 }
 	
-ClientRef Client::create( const ci::DataSourceRef &jsonSettingsFile, boost::asio::io_service &service, bool thread )
+ClientRef Client::create( const ci::DataSourceRef &jsonSettingsFile, asio::io_service &service, bool thread )
 {
 	return ClientRef( new Client( jsonSettingsFile, service, thread ) );
 }
@@ -168,7 +168,7 @@ void Client::doneRendering()
 void Client::loadSettings( const ci::DataSourceRef &settingsJsonFile )
 {
 	JsonTree settingsDoc = JsonTree(settingsJsonFile).getChild( "settings" );
-	cout << settingsDoc << endl;
+	
 	try {
 		JsonTree node = settingsDoc.getChild( "asynchronous" );
 		mIsAsync = node.getValue<bool>();
@@ -316,7 +316,7 @@ void Client::onConnect( TcpSessionRef session )
 	sendClientId();
 }
 	
-void Client::onRead( ci::Buffer buffer )
+void Client::onRead( const ci::BufferRef &buffer )
 {
 	std::lock_guard<std::mutex> guard( *mMessageMutex );
 	auto msg = TcpSession::bufferToString( buffer );
