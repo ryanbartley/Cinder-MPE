@@ -13,7 +13,7 @@
 #include "cinder/Rect.h"
 
 #include "ClientBase.hpp"
-#include "TcpClient.h"
+#include "asio\asio.hpp"
 
 namespace mpe {
 	
@@ -22,6 +22,7 @@ using UpdateFrameCallback	= std::function<void ( uint64_t )>;
 using ResetCallback			= std::function<void()>;
 using DataMessageCallback	= std::function<void ( const std::string &, const uint32_t )>;
 using io_service_ref		= std::shared_ptr<asio::io_service>;
+using TcpSocketRef			= std::shared_ptr<asio::ip::tcp::socket>;
 	
 class Client : public ClientBase, public std::enable_shared_from_this<Client> {
 public:
@@ -37,7 +38,7 @@ public:
 	//! Stops the connection to the server.
 	virtual void	stop() override;
 	//! Returns whether the connection to the server is still open.
-	bool			isConnected() const override { return mIsConnected && mTcpSession->getSocket()->is_open(); }
+	bool			isConnected() const override { return mIsConnected && mTcpSocket->is_open(); }
 	//! Updates the client and processes all received messages.
 	virtual void	update() override;
 	
@@ -125,7 +126,7 @@ protected:
 	virtual void		start() override;
 	
 	//! Internal Callback for TcpClient, which caches session and sets up the session callbacks.
-	virtual void		onConnect( TcpSessionRef session );
+	virtual void		onConnect( TcpSocketRef session );
 	//! Internal Callback for TcpClient and TcpSession, which presents errors.
 	virtual void		onError( std::string err, size_t bytesTransferred );
 	//! Internal Callback for TcpSession when TcpSession has read something.
@@ -153,8 +154,7 @@ protected:
 	cinder::signals::Connection		mAppUpdateConnection;
 	
 	// A connection to the server.
-    TcpClientRef					mTcpClient;
-	TcpSessionRef					mTcpSession;
+	TcpSocketRef					mTcpSocket;
 	bool							mIsConnected;
 	uint16_t                        mPort;					// settings
     std::string                     mHostname;				// settings

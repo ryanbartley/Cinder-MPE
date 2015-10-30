@@ -40,6 +40,8 @@ public:
 	CameraPersp				mCam;
 };
 
+#define CLIENT_ID 0
+
 void BouncingBallApp::setup()
 {
 	randSeed( 5 );
